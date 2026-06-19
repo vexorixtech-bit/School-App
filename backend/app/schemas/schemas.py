@@ -1,3 +1,4 @@
+from __future__ import annotations
 from pydantic import BaseModel, EmailStr, Field, validator
 from typing import Optional, List
 from datetime import date, datetime
@@ -12,7 +13,7 @@ class TokenResponse(BaseModel):
     access_token: str
     refresh_token: str
     token_type: str = "bearer"
-    user: "UserOut"
+    user: UserOut
 
 class RefreshTokenRequest(BaseModel):
     refresh_token: str
