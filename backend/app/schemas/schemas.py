@@ -1,8 +1,36 @@
-from __future__ import annotations
 from pydantic import BaseModel, EmailStr, Field, validator
 from typing import Optional, List
 from datetime import date, datetime
 from enum import Enum
+
+# --- User (defined first so Auth can reference it) ---
+class UserOut(BaseModel):
+    id: int
+    email: str
+    username: str
+    full_name: str
+    role: str
+    phone: Optional[str]
+    is_active: bool
+    profile_image: Optional[str]
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True
+
+class UserCreate(BaseModel):
+    email: Optional[EmailStr] = None
+    username: str = Field(..., min_length=3, max_length=50)
+    password: str = Field(..., min_length=6)
+    full_name: str = Field(..., max_length=255)
+    role: str
+    phone: Optional[str] = None
+
+class UserUpdate(BaseModel):
+    full_name: Optional[str] = None
+    phone: Optional[str] = None
+    profile_image: Optional[str] = None
+    is_active: Optional[bool] = None
 
 # --- Auth ---
 class LoginRequest(BaseModel):
@@ -28,35 +56,6 @@ class ResetPasswordRequest(BaseModel):
 class ChangePasswordRequest(BaseModel):
     old_password: str
     new_password: str = Field(..., min_length=6)
-
-# --- User ---
-class UserCreate(BaseModel):
-    email: Optional[EmailStr] = None
-    username: str = Field(..., min_length=3, max_length=50)
-    password: str = Field(..., min_length=6)
-    full_name: str = Field(..., max_length=255)
-    role: str
-    phone: Optional[str] = None
-
-class UserOut(BaseModel):
-    id: int
-    email: str
-    username: str
-    full_name: str
-    role: str
-    phone: Optional[str]
-    is_active: bool
-    profile_image: Optional[str]
-    created_at: datetime
-    
-    class Config:
-        from_attributes = True
-
-class UserUpdate(BaseModel):
-    full_name: Optional[str] = None
-    phone: Optional[str] = None
-    profile_image: Optional[str] = None
-    is_active: Optional[bool] = None
 
 # --- Student ---
 class StudentCreate(BaseModel):
