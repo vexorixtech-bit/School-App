@@ -157,10 +157,9 @@ async def websocket_endpoint(websocket: WebSocket, token: str = ""):
 def health_check():
     return {"status": "ok", "app": settings.APP_NAME, "version": "1.0.0"}
 
-# Seed super admin
-@app.on_event("startup")
-def seed_admin():
-    from app.database import SessionLocal
+# Seed default accounts
+from app.database import SessionLocal
+try:
     db = SessionLocal()
     try:
         admin = db.query(User).filter(User.username == "superadmin").first()
@@ -177,8 +176,12 @@ def seed_admin():
             db.add(admin)
             db.commit()
             print("✓ Super admin created (username: superadmin, password: admin123)")
+        else:
+            print("✓ Super admin already exists")
     finally:
         db.close()
+except Exception as e:
+    print(f"⚠ Seed error: {e}")
 
 if __name__ == "__main__":
     import uvicorn
