@@ -175,13 +175,13 @@ try:
             )
             db.add(admin)
             db.commit()
-            print("✓ Super admin created (username: superadmin, password: admin123)")
+            print("SUPER ADMIN CREATED (superadmin / admin123)")
         else:
-            print("✓ Super admin already exists")
+            print("SUPER ADMIN ALREADY EXISTS")
     finally:
         db.close()
 except Exception as e:
-    print(f"⚠ Seed error: {e}")
+    print(f"Seed error: {e}")
 
 if __name__ == "__main__":
     import uvicorn
