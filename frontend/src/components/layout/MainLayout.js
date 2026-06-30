@@ -9,7 +9,7 @@ export default function MainLayout({ children }) {
   const { user, showTimeoutWarning, setShowTimeoutWarning, logout } = useAuth();
   useWebSocket();
   const role = user?.role?.toLowerCase();
-  const hasBg = role === 'super_admin' || role === 'admin' || role === 'student' || role === 'teacher' || role === 'principal';
+  const hasBg = !!role;
   const bgSrc = role === 'student'
     ? 'https://images.pexels.com/photos/5636692/pexels-photo-5636692.jpeg?w=1200&q=60&auto=compress&cs=tinysrgb'
     : role === 'teacher'
