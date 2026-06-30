@@ -156,13 +156,10 @@ async def websocket_endpoint(websocket: WebSocket, token: str = ""):
 # Health check (root for Render)
 @app.get("/")
 @app.head("/")
-def root():
-    return {"status": "ok", "app": settings.APP_NAME}
-
 @app.get("/api/health")
 @app.head("/api/health")
-def health_check():
-    return {"status": "ok", "app": settings.APP_NAME, "version": "1.0.0"}
+def health():
+    return {"status": "ok", "app": settings.APP_NAME}
 
 # Startup event
 @app.on_event("startup")
