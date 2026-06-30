@@ -158,43 +158,45 @@ async def websocket_endpoint(websocket: WebSocket, token: str = ""):
 def health_check():
     return {"status": "ok", "app": settings.APP_NAME, "version": "1.0.0"}
 
-# Database startup check
-from app.database import SessionLocal, USE_SQLITE
-if not USE_SQLITE:
-    print(f"Connecting to database...")
+# Startup event
+@app.on_event("startup")
+def startup():
+    from app.database import SessionLocal, USE_SQLITE
+    if not USE_SQLITE:
+        print("Connecting to database...", flush=True)
+        try:
+            db = SessionLocal()
+            from sqlalchemy import text
+            db.execute(text("SELECT 1"))
+            db.close()
+            print("Database connected successfully", flush=True)
+        except Exception as e:
+            print(f"DATABASE CONNECTION FAILED: {e}", flush=True)
+
+    # Seed default accounts
     try:
         db = SessionLocal()
-        from sqlalchemy import text
-        db.execute(text("SELECT 1"))
-        db.close()
-        print("Database connected successfully")
+        try:
+            admin = db.query(User).filter(User.username == "superadmin").first()
+            if not admin:
+                admin = User(
+                    email="admin@schooleerp.com",
+                    username="superadmin",
+                    password_hash=hash_password("admin123"),
+                    full_name="Super Admin",
+                    role=UserRole.SUPER_ADMIN,
+                    is_active=True,
+                    is_verified=True
+                )
+                db.add(admin)
+                db.commit()
+                print("SUPER ADMIN CREATED (superadmin / admin123)", flush=True)
+            else:
+                print("SUPER ADMIN ALREADY EXISTS", flush=True)
+        finally:
+            db.close()
     except Exception as e:
-        print(f"DATABASE CONNECTION FAILED: {e}")
-
-# Seed default accounts
-try:
-    db = SessionLocal()
-    try:
-        admin = db.query(User).filter(User.username == "superadmin").first()
-        if not admin:
-            admin = User(
-                email="admin@schooleerp.com",
-                username="superadmin",
-                password_hash=hash_password("admin123"),
-                full_name="Super Admin",
-                role=UserRole.SUPER_ADMIN,
-                is_active=True,
-                is_verified=True
-            )
-            db.add(admin)
-            db.commit()
-            print("SUPER ADMIN CREATED (superadmin / admin123)")
-        else:
-            print("SUPER ADMIN ALREADY EXISTS")
-    finally:
-        db.close()
-except Exception as e:
-    print(f"Seed error: {e}")
+        print(f"Seed error: {e}", flush=True)
 
 if __name__ == "__main__":
     import uvicorn

@@ -12,12 +12,7 @@ if USE_SQLITE:
     engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 else:
     DATABASE_URL = settings.DATABASE_URL
-    # Add connect timeout to handle Neon cold start
-    if "?" in DATABASE_URL:
-        DATABASE_URL += "&connect_timeout=15"
-    else:
-        DATABASE_URL += "?connect_timeout=15"
-    engine = create_engine(DATABASE_URL, pool_pre_ping=True, pool_size=5, max_overflow=5)
+    engine = create_engine(DATABASE_URL, pool_pre_ping=True, pool_size=5, max_overflow=5, connect_args={"connect_timeout": 15})
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
