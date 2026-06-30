@@ -151,6 +151,7 @@ export default function Students() {
           class_id: Number(form.class_id)
         });
         toast.success('Student updated');
+        setShowModal(false);
       } else {
         const res = await api.post('/api/students/', {
           first_name: form.first_name, last_name: form.last_name,

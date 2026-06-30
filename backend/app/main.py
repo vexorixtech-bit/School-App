@@ -12,8 +12,6 @@ from app.websocket_manager import manager
 import os
 import traceback
 import bleach
-import re
-import json
 from datetime import datetime
 
 app = FastAPI(title=settings.APP_NAME, version="1.0.0", docs_url="/docs" if settings.is_debug else None, redoc_url=None)
@@ -37,10 +35,9 @@ async def add_security_headers(request: Request, call_next):
     response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
     return response
 
-# XSS sanitization middleware — strips HTML tags from all string fields in requests
-ALLOWED_TAGS = []  # strip all HTML tags
+# XSS sanitization — strips HTML tags from request JSON
+ALLOWED_TAGS = []
 ALLOWED_ATTRIBUTES = {}
-
 def sanitize_value(v):
     if isinstance(v, str):
         return bleach.clean(v, tags=ALLOWED_TAGS, attributes=ALLOWED_ATTRIBUTES, strip=True)
@@ -49,24 +46,6 @@ def sanitize_value(v):
     if isinstance(v, list):
         return [sanitize_value(item) for item in v]
     return v
-
-@app.middleware("http")
-async def sanitize_input(request: Request, call_next):
-    if request.method in ("POST", "PUT", "PATCH"):
-        content_type = request.headers.get("content-type", "")
-        if "application/json" in content_type:
-            try:
-                body = await request.body()
-                if body:
-                    parsed = await request.json()
-                    sanitized = sanitize_value(parsed)
-                    request._body = json.dumps(sanitized).encode()
-                    if hasattr(request, "_json"):
-                        del request._json
-            except Exception:
-                pass
-    response = await call_next(request)
-    return response
 
 # Audit log middleware — logs all state-changing API calls
 @app.middleware("http")
