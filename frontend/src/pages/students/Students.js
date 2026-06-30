@@ -327,16 +327,16 @@ export default function Students() {
                   <select value={form.class_id} onChange={e => setForm({...form, class_id: e.target.value, section_id: ''})} className="input-field" required>
                     <option value="">Select Class</option>
                     {classes.map(c => (
-                      <option key={c.id} value={c.id}>{c.name}</option>
+                      <option key={c.id} value={String(c.id)}>{c.name}</option>
                     ))}
                   </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Section</label>
-                  <select value={form.section_id} onChange={e => setForm({...form, section_id: e.target.value})} className="input-field">
+                  <select value={form.section_id} onChange={e => setForm({...form, section_id: e.target.value})} className="input-field" disabled={!form.class_id}>
                     <option value="">Select Section</option>
                     {sections.map(s => (
-                      <option key={s.id} value={s.id}>{s.name}</option>
+                      <option key={s.id} value={String(s.id)}>{s.name}</option>
                     ))}
                   </select>
                 </div>

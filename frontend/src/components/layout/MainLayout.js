@@ -8,10 +8,11 @@ export default function MainLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { user, showTimeoutWarning, setShowTimeoutWarning, logout } = useAuth();
   useWebSocket();
-  const hasBg = user?.role === 'admin' || user?.role === 'student' || user?.role === 'teacher';
-  const bgSrc = user?.role === 'student'
+  const role = user?.role?.toLowerCase();
+  const hasBg = role === 'super_admin' || role === 'admin' || role === 'student' || role === 'teacher' || role === 'principal';
+  const bgSrc = role === 'student'
     ? 'https://images.pexels.com/photos/5636692/pexels-photo-5636692.jpeg?w=1200&q=60&auto=compress&cs=tinysrgb'
-    : user?.role === 'teacher'
+    : role === 'teacher'
     ? 'https://media.istockphoto.com/id/1344268966/photo/teacher-taking-attendance-in-the-classroom.jpg?s=1024x1024&w=is&k=20&c=79l03zZiRwl9G7XW5y43EJ8UqOuNNoaDICrpuF_fm2Q='
     : 'https://images.pexels.com/photos/256417/pexels-photo-256417.jpeg?w=1200&q=60&auto=compress&cs=tinysrgb';
 
