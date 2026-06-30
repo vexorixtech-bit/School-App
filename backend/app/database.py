@@ -12,7 +12,7 @@ if USE_SQLITE:
     engine = create_engine(DATABASE_URL, connect_args={"check_same_thread": False})
 else:
     DATABASE_URL = settings.DATABASE_URL
-    engine = create_engine(DATABASE_URL, pool_pre_ping=True, pool_size=2, max_overflow=2, pool_recycle=30)
+    engine = create_engine(DATABASE_URL, pool_pre_ping=False, pool_size=5, max_overflow=5, pool_recycle=30, pool_timeout=10, connect_args={"connect_timeout": 10})
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
