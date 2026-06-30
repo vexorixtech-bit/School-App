@@ -158,8 +158,20 @@ async def websocket_endpoint(websocket: WebSocket, token: str = ""):
 def health_check():
     return {"status": "ok", "app": settings.APP_NAME, "version": "1.0.0"}
 
+# Database startup check
+from app.database import SessionLocal, USE_SQLITE
+if not USE_SQLITE:
+    print(f"Connecting to database...")
+    try:
+        db = SessionLocal()
+        from sqlalchemy import text
+        db.execute(text("SELECT 1"))
+        db.close()
+        print("Database connected successfully")
+    except Exception as e:
+        print(f"DATABASE CONNECTION FAILED: {e}")
+
 # Seed default accounts
-from app.database import SessionLocal
 try:
     db = SessionLocal()
     try:
