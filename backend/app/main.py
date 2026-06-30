@@ -47,38 +47,7 @@ def sanitize_value(v):
         return [sanitize_value(item) for item in v]
     return v
 
-# Audit log middleware — logs all state-changing API calls
-@app.middleware("http")
-async def audit_logger(request: Request, call_next):
-    response = await call_next(request)
-    if request.method in ("POST", "PUT", "PATCH", "DELETE") and response.status_code < 400:
-        try:
-            from app.database import SessionLocal
-            body = await request.body()
-            db_audit = SessionLocal()
-            try:
-                user_id = None
-                auth_header = request.headers.get("authorization", "")
-                if auth_header.startswith("Bearer "):
-                    from app.auth.auth_handler import decode_token
-                    try:
-                        payload = decode_token(auth_header.replace("Bearer ", ""))
-                        user_id = int(payload.get("sub"))
-                    except Exception:
-                        pass
-                log = AuditLog(
-                    user_id=user_id,
-                    action=f"{request.method} {request.url.path}",
-                    details=body[:500].decode("utf-8", errors="ignore") if body else None,
-                    ip_address=request.client.host if request.client else None,
-                )
-                db_audit.add(log)
-                db_audit.commit()
-            finally:
-                db_audit.close()
-        except Exception:
-            pass
-    return response
+# Audit log disabled — SessionLocal() hangs on Neon after request completes
 
 # Global exception handler — no stack trace leak in production
 @app.exception_handler(Exception)
