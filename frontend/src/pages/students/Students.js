@@ -155,7 +155,7 @@ export default function Students() {
       } else {
         const res = await api.post('/api/students/', {
           first_name: form.first_name, last_name: form.last_name,
-          gender: form.gender.toUpperCase(), phone: toNull(form.phone), email: toNull(form.email),
+          gender: form.gender.toLowerCase(), phone: toNull(form.phone), email: toNull(form.email),
           address: toNull(form.address), date_of_birth: form.date_of_birth || today,
           admission_date: form.admission_date || today,
           class_id: Number(form.class_id),

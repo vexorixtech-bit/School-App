@@ -114,7 +114,7 @@ export default function Teachers() {
       } else {
         const res = await api.post('/api/teachers/', {
           first_name: form.first_name, last_name: form.last_name,
-          gender: form.gender.toUpperCase(),
+          gender: form.gender.toLowerCase(),
           date_of_birth: form.date_of_birth || today,
           qualification: form.qualification || null,
           specialization: form.specialization || null,
