@@ -1,0 +1,42 @@
+<svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="0.5" y="0.5" width="59" height="59" rx="19.5" stroke="#8A8A8A" stroke-width="1" fill="none"/>
+  
+  <g transform="translate(30, 34)">
+    <!-- Body -->
+    <ellipse cx="0" cy="0" rx="12" ry="9" fill="#3F8C0F"/>
+    
+    <!-- Wool dots -->
+    <circle cx="-5" cy="-3" r="3.5" fill="#4DAF15" opacity="0.25"/>
+    <circle cx="1" cy="-5" r="3" fill="#4DAF15" opacity="0.25"/>
+    <circle cx="6" cy="-2" r="3.5" fill="#4DAF15" opacity="0.25"/>
+    <circle cx="-2" cy="2" r="3" fill="#4DAF15" opacity="0.25"/>
+    <circle cx="4" cy="3" r="2.5" fill="#4DAF15" opacity="0.25"/>
+    <circle cx="9" cy="1" r="2" fill="#4DAF15" opacity="0.25"/>
+    
+    <!-- Head -->
+    <ellipse cx="-11" cy="-5" rx="5.5" ry="6" fill="#3F8C0F"/>
+    
+    <!-- Left ear -->
+    <ellipse cx="-14" cy="-10" rx="3" ry="1.2" fill="#3F8C0F" transform="rotate(-25 -14 -10)"/>
+    <!-- Right ear -->
+    <ellipse cx="-8" cy="-10" rx="3" ry="1.2" fill="#3F8C0F" transform="rotate(25 -8 -10)"/>
+    
+    <!-- Snout -->
+    <ellipse cx="-15" cy="-3" rx="2" ry="1.5" fill="#2D6B0A"/>
+    
+    <!-- Eye -->
+    <circle cx="-12.5" cy="-6" r="1" fill="white"/>
+    <circle cx="-12.5" cy="-6" r="0.5" fill="#1A4A05"/>
+    
+    <!-- Front legs -->
+    <rect x="-8" y="8" width="3" height="6" rx="1.2" fill="#3F8C0F"/>
+    <rect x="-4" y="8" width="3" height="6" rx="1.2" fill="#3F8C0F"/>
+    
+    <!-- Back legs -->
+    <rect x="3" y="8" width="3" height="6" rx="1.2" fill="#3F8C0F"/>
+    <rect x="7" y="8" width="3" height="6" rx="1.2" fill="#3F8C0F"/>
+    
+    <!-- Tail -->
+    <ellipse cx="12" cy="-3" rx="2.5" ry="1.8" fill="#3F8C0F"/>
+  </g>
+</svg>

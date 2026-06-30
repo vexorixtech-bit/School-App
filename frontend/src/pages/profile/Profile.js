@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { formatDate } from '../../utils/helpers';
@@ -6,10 +6,12 @@ import toast from 'react-hot-toast';
 import api from '../../services/api';
 
 export default function Profile() {
-  const { user, logout } = useAuth();
+  const { user, logout, setUser } = useAuth();
   const navigate = useNavigate();
+  const fileRef = useRef(null);
   const [showConfirm, setShowConfirm] = useState(false);
   const [profile, setProfile] = useState(null);
+  const [uploading, setUploading] = useState(false);
   const isStudent = user?.role === 'student';
   const isTeacher = user?.role === 'teacher';
 
@@ -27,6 +29,48 @@ export default function Profile() {
     }
   }, [isStudent, isTeacher]);
 
+  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+  const getPhotoUrl = () => {
+    let url = null;
+    if (isStudent && profile?.photo) url = profile.photo;
+    else if (isTeacher && profile?.photo) url = profile.photo;
+    else url = user?.profile_image || null;
+    if (url && url.startsWith('/uploads/')) return API_URL + url;
+    return url;
+  };
+
+  const handlePhoto = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      let res;
+      if (isStudent) {
+        res = await api.post('/api/students/my-profile/photo', fd, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        setProfile(prev => ({ ...prev, photo: res.data.photo_url }));
+      } else if (isTeacher) {
+        res = await api.post('/api/teachers/my-profile/photo', fd, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        setProfile(prev => ({ ...prev, photo: res.data.photo_url }));
+      } else {
+        res = await api.post('/api/users/my-profile/photo', fd, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        setUser(prev => ({ ...prev, profile_image: res.data.photo_url }));
+      }
+      toast.success('Photo uploaded');
+    } catch (err) {
+      toast.error(err.response?.data?.detail || 'Upload failed');
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleLogout = () => {
     toast.success('Logged out successfully');
     logout();
@@ -35,14 +79,40 @@ export default function Profile() {
 
   if (!user) return null;
 
+  const photoUrl = getPhotoUrl();
+
   return (
     <div className="max-w-lg mx-auto">
       <h1 className="page-title">Profile</h1>
 
       <div className="card mb-6">
         <div className="flex flex-col items-center text-center">
-          <div className="w-24 h-24 bg-primary-100 rounded-full flex items-center justify-center text-primary-600 text-3xl font-bold border-4 border-gray-100 mb-4">
-            {user.full_name?.charAt(0)?.toUpperCase() || 'U'}
+          <div className="relative mb-4">
+            {photoUrl ? (
+              <img src={photoUrl} alt="" className="w-24 h-24 rounded-full object-cover border-4 border-gray-100" />
+            ) : (
+              <div className="w-24 h-24 bg-primary-100 rounded-full flex items-center justify-center text-primary-600 text-3xl font-bold border-4 border-gray-100">
+                {user.full_name?.charAt(0)?.toUpperCase() || 'U'}
+              </div>
+            )}
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              disabled={uploading}
+              className="absolute -bottom-1 -right-1 w-8 h-8 bg-primary-600 text-white rounded-full flex items-center justify-center text-lg shadow-md hover:bg-primary-700 disabled:opacity-50"
+            >
+              {uploading ? (
+                <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+              ) : (
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+              )}
+            </button>
+            <input type="file" ref={fileRef} onChange={handlePhoto} accept="image/*" className="hidden" />
           </div>
           <h2 className="text-xl font-bold text-gray-800">{user.full_name || 'User'}</h2>
           <p className="text-sm text-gray-500 capitalize">{user.role?.replace('_', ' ')}</p>

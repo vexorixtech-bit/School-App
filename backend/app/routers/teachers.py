@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
 from sqlalchemy.orm import Session
 from typing import Optional
 from app.database import get_db
@@ -7,6 +7,8 @@ from app.schemas.schemas import TeacherCreate, TeacherOut, TeacherUpdate
 from app.auth.auth_handler import get_current_user, hash_password
 from datetime import date
 import random
+import os
+import uuid
 
 router = APIRouter(prefix="/api/teachers", tags=["Teachers"])
 
@@ -258,6 +260,65 @@ def create_teacher_login(teacher_id: int, req: dict, db: Session = Depends(get_d
     db.commit()
     
     return {"username": username, "password": password}
+
+TEACHER_UPLOAD_DIR = "uploads/teachers"
+os.makedirs(TEACHER_UPLOAD_DIR, exist_ok=True)
+
+@router.post("/my-profile/photo")
+async def upload_my_photo(file: UploadFile = File(...), db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    teacher = db.query(Teacher).filter(Teacher.user_id == current_user.id).first()
+    if not teacher:
+        raise HTTPException(status_code=404, detail="Teacher profile not found")
+    if current_user.role != UserRole.TEACHER:
+        raise HTTPException(status_code=403, detail="Only teachers can upload their own photo")
+
+    MAX_SIZE = 5 * 1024 * 1024
+    ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "gif", "webp"}
+
+    ext = file.filename.split(".")[-1].lower() if "." in file.filename else ""
+    if ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(status_code=400, detail=f"Invalid file type. Allowed: {', '.join(ALLOWED_EXTENSIONS)}")
+
+    content = await file.read()
+    if len(content) > MAX_SIZE:
+        raise HTTPException(status_code=400, detail="File too large. Maximum size is 5MB")
+
+    filename = f"{teacher.id}_{uuid.uuid4()}.{ext}"
+    filepath = os.path.join(TEACHER_UPLOAD_DIR, filename)
+
+    with open(filepath, "wb") as f:
+        f.write(content)
+
+    teacher.photo = f"/uploads/teachers/{filename}"
+    db.commit()
+    return {"photo_url": teacher.photo}
+
+@router.post("/{teacher_id:int}/photo")
+async def upload_photo(teacher_id: int, file: UploadFile = File(...), db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    teacher = db.query(Teacher).filter(Teacher.id == teacher_id).first()
+    if not teacher:
+        raise HTTPException(status_code=404, detail="Teacher not found")
+
+    MAX_SIZE = 5 * 1024 * 1024
+    ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "gif", "webp"}
+
+    ext = file.filename.split(".")[-1].lower() if "." in file.filename else ""
+    if ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(status_code=400, detail=f"Invalid file type. Allowed: {', '.join(ALLOWED_EXTENSIONS)}")
+
+    content = await file.read()
+    if len(content) > MAX_SIZE:
+        raise HTTPException(status_code=400, detail="File too large. Maximum size is 5MB")
+
+    filename = f"{teacher_id}_{uuid.uuid4()}.{ext}"
+    filepath = os.path.join(TEACHER_UPLOAD_DIR, filename)
+
+    with open(filepath, "wb") as f:
+        f.write(content)
+
+    teacher.photo = f"/uploads/teachers/{filename}"
+    db.commit()
+    return {"photo_url": teacher.photo}
 
 @router.put("/{teacher_id}/update-login")
 def update_teacher_login(teacher_id: int, req: dict, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):

@@ -3,6 +3,8 @@ import api from '../../services/api';
 import toast from 'react-hot-toast';
 import { formatDate, calculateAge } from '../../utils/helpers';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:8000';
+
 export default function MyProfile() {
   const [student, setStudent] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -77,7 +79,7 @@ export default function MyProfile() {
         <div className="flex flex-col items-center text-center">
           <div className="relative mb-4">
             {student.photo ? (
-              <img src={student.photo} alt="" className="w-24 h-24 rounded-full object-cover border-4 border-gray-100" />
+              <img src={student.photo.startsWith('/uploads/') ? API_URL + student.photo : student.photo} alt="" className="w-24 h-24 rounded-full object-cover border-4 border-gray-100" />
             ) : (
               <div className="w-24 h-24 bg-primary-100 rounded-full flex items-center justify-center text-primary-600 text-3xl font-bold">
                 {student.first_name?.charAt(0)?.toUpperCase()}

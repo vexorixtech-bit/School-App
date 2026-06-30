@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.orm import Session
 from typing import Optional, List
 from app.database import get_db
@@ -6,8 +6,36 @@ from app.models.models import User, UserRole
 from app.schemas.schemas import UserCreate, UserOut, UserUpdate
 from app.auth.auth_handler import get_current_user, hash_password, role_required
 from datetime import datetime
+import os
+import uuid
 
 router = APIRouter(prefix="/api/users", tags=["Users"])
+
+PROFILE_UPLOAD_DIR = "uploads/profiles"
+os.makedirs(PROFILE_UPLOAD_DIR, exist_ok=True)
+
+@router.post("/my-profile/photo")
+async def upload_my_photo(file: UploadFile = File(...), db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    MAX_SIZE = 5 * 1024 * 1024
+    ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "gif", "webp"}
+
+    ext = file.filename.split(".")[-1].lower() if "." in file.filename else ""
+    if ext not in ALLOWED_EXTENSIONS:
+        raise HTTPException(status_code=400, detail=f"Invalid file type. Allowed: {', '.join(ALLOWED_EXTENSIONS)}")
+
+    content = await file.read()
+    if len(content) > MAX_SIZE:
+        raise HTTPException(status_code=400, detail="File too large. Maximum size is 5MB")
+
+    filename = f"{current_user.id}_{uuid.uuid4()}.{ext}"
+    filepath = os.path.join(PROFILE_UPLOAD_DIR, filename)
+
+    with open(filepath, "wb") as f:
+        f.write(content)
+
+    current_user.profile_image = f"/uploads/profiles/{filename}"
+    db.commit()
+    return {"photo_url": current_user.profile_image}
 
 @router.get("/")
 def get_users(
